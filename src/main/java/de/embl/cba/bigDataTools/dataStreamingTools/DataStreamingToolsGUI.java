@@ -29,6 +29,8 @@ import static java.awt.Desktop.isDesktopSupported;
 
 public class DataStreamingToolsGUI extends JFrame implements ActionListener, FocusListener, ItemListener {
 
+    // Nils was here
+
     JCheckBox cbLog = new JCheckBox("Verbose logging");
     JCheckBox cbLZW = new JCheckBox("LZW compression (Tiff)");
     JCheckBox cbSaveVolume = new JCheckBox("Save volume data");
