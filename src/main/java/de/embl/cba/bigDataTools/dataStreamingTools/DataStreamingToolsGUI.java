@@ -49,6 +49,14 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
     JTextField tfGateMin = new JTextField("0",5);
     JTextField tfGateMax = new JTextField("255",5);
 
+    // obliqueTab
+    JCheckBox cbViewLeft = new JCheckBox("");
+    JCheckBox cbBackwardStackAcquisition = new JCheckBox("");
+    JTextField tfCameraPixelsize= new JTextField("6.5", 1);
+    JTextField tfMagnification = new JTextField("40",2);
+    JTextField tfStepsize = new JTextField("40",3);
+
+
     JComboBox filterPatternComboBox = new JComboBox(new String[] {
             ".*",".*--C.*",".*Left.*",".*Right.*",".*_Target--.*",".*--LSEA00--.*",".*--LSEA01--.*"});
     JComboBox namingSchemeComboBox = new JComboBox(new String[] {
@@ -124,6 +132,8 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         cbLZW.setSelected(false);
         cbSaveVolume.setSelected(true);
         cbSaveProjection.setSelected(false);
+        cbBackwardStackAcquisition.setSelected(false);
+        cbViewLeft.setSelected(false);
 
         int i = 0, j = 0, k = 0;
 
@@ -289,6 +299,49 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         jtp.add("Viewing", mainPanels.get(k++));
         */
 
+
+        // OBLIQUE
+
+
+
+        mainPanels.add( new JPanel() );
+        mainPanels.get(k).setLayout(new BoxLayout(mainPanels.get(k), BoxLayout.PAGE_AXIS));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("Magnification =   (40x Default)"));
+        panels.get(j).add(tfMagnification);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("Pixelsize on Camera in mikrometer = (6.5 Default)"));
+        panels.get(j).add(tfCameraPixelsize);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("View left? (Right default)"));
+        panels.get(j).add(cbViewLeft);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("BackwardStackAcquisition? (Forward default)"));
+        panels.get(j).add(cbBackwardStackAcquisition);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("Stack stepsize (in mikrometers) "));
+        panels.get(j).add(tfStepsize);
+        mainPanels.get(k).add(panels.get(j++));
+
+        jtp.add("Oblique", mainPanels.get(k++));
+
+
+
+
+
+
+
+
+
         // Misc
         //
         mainPanels.add( new JPanel() );
@@ -375,17 +428,41 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         //
         final DataStreamingTools dataStreamingTools = new DataStreamingTools();
         final String h5DataSet = (String)hdf5DataSetComboBox.getSelectedItem();
-        final int nIOthreads = new Integer(tfIOThreads.getText());
-        final int rowsPerStrip = new Integer(tfRowsPerStrip.getText());
-        final String filterPattern = (String)filterPatternComboBox.getSelectedItem();
+        final int nIOthreads = new Integer( tfIOThreads.getText() );
+        final int rowsPerStrip = new Integer( tfRowsPerStrip.getText() );
+        final String filterPattern = (String) filterPatternComboBox.getSelectedItem();
         final String channelPattern = (String) namingSchemeComboBox.getSelectedItem();
 
-        if (e.getActionCommand().equals(STREAMfromFolder)) {
+
+        ShearingSettings shearingSettings = new ShearingSettings();
+
+        
+        shearingSettings.magnification = new Double(tfMagnification.getText());
+        shearingSettings.cameraPixelsize= new Double(tfCameraPixelsize.getText());
+        shearingSettings.stepSize= new Double(tfStepsize.getText());
+        shearingSettings.backwardStackAcquisition= new Boolean(cbBackwardStackAcquisition.getText());
+        shearingSettings.viewLeft= new Boolean(cbViewLeft.getText());
+
+        // get shearing factors from GUI
+
+
+        // math   // e.g. calculation of new shearingfactors..
+
+        // shearingSettings.shearingFactorX=shearingSettings.getShearingfactorX()
+        shearingSettings.shearingFactorX = 0.0;
+        shearingSettings.shearingFactorY = 0.0 ;
+
+
+
+        if ( e.getActionCommand().equals( STREAMfromFolder ) ) {
 
             // Open from folder
             final String directory = IJ.getDirectory("Select a Directory");
             if (directory == null)
                 return;
+            ImageDataInfo imageDataInfo =new ImageDataInfo();
+            imageDataInfo.shearingSettings=shearingSettings;
+
 
             Thread t1 = new Thread(new Runnable() {
                 public void run() {
@@ -394,7 +471,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                             channelPattern,
                             filterPattern,
                             h5DataSet,
-                            new ImageDataInfo(),
+                            imageDataInfo,      //NN
                             nIOthreads,
                             true,
                             false);
@@ -403,7 +480,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             t1.start();
 
         }
-        else if (e.getActionCommand().equals(BDV))
+        else if ( e.getActionCommand().equals(BDV) )
         {
 
             //
@@ -496,25 +573,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                     if(cbLZW.isSelected())
                         compression="LZW";
 
-                    SavingSettings savingSettings = new SavingSettings();
-                    savingSettings.imp = imp;
-                    savingSettings.bin = tfBinning.getText();
-                    savingSettings.saveVolume = cbSaveVolume.isSelected();
-                    savingSettings.saveProjection = cbSaveProjection.isSelected();
-                    savingSettings.convertTo8Bit = cbConvertTo8Bit.isSelected();
-                    savingSettings.convertTo16Bit = cbConvertTo16Bit.isSelected();
-                    savingSettings.gate = cbGating.isSelected();
-                    savingSettings.gateMin = Integer.parseInt(tfGateMin.getText());
-                    savingSettings.gateMax = Integer.parseInt(tfGateMax.getText());
-                    savingSettings.mapTo0 = Integer.parseInt(tfMapTo0.getText());
-                    savingSettings.mapTo255 = Integer.parseInt(tfMapTo255.getText());
-                    savingSettings.directory = file.getParent();
-                    savingSettings.fileBaseName = file.getName();
-                    savingSettings.filePath = file.getAbsolutePath();
-                    savingSettings.fileType = fileType;
-                    savingSettings.compression = compression;
-                    savingSettings.rowsPerStrip = rowsPerStrip;
-                    savingSettings.nThreads = ioThreads;
+                    SavingSettings savingSettings = getSavingSettings(rowsPerStrip, imp, file, fileType, ioThreads, compression);
 
                     new Thread(new Runnable() {
                         public void run()
@@ -697,6 +756,29 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             }
 
         }
+    }
+
+    private SavingSettings getSavingSettings(int rowsPerStrip, ImagePlus imp, File file, Utils.FileType fileType, int ioThreads, String compression) {
+        SavingSettings savingSettings = new SavingSettings();
+        savingSettings.imp = imp;
+        savingSettings.bin = tfBinning.getText();
+        savingSettings.saveVolume = cbSaveVolume.isSelected();
+        savingSettings.saveProjection = cbSaveProjection.isSelected();
+        savingSettings.convertTo8Bit = cbConvertTo8Bit.isSelected();
+        savingSettings.convertTo16Bit = cbConvertTo16Bit.isSelected();
+        savingSettings.gate = cbGating.isSelected();
+        savingSettings.gateMin = Integer.parseInt(tfGateMin.getText());
+        savingSettings.gateMax = Integer.parseInt(tfGateMax.getText());
+        savingSettings.mapTo0 = Integer.parseInt(tfMapTo0.getText());
+        savingSettings.mapTo255 = Integer.parseInt(tfMapTo255.getText());
+        savingSettings.directory = file.getParent();
+        savingSettings.fileBaseName = file.getName();
+        savingSettings.filePath = file.getAbsolutePath();
+        savingSettings.fileType = fileType;
+        savingSettings.compression = compression;
+        savingSettings.rowsPerStrip = rowsPerStrip;
+        savingSettings.nThreads = ioThreads;
+        return savingSettings;
     }
 
     private String[] getToolTipFile(String fileName) {

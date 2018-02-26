@@ -1,5 +1,7 @@
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingTools;
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingToolsGUI;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
+import de.embl.cba.bigDataTools.utils.ImageDataInfo;
 import ij.IJ;
 
 public class OpenOneChannelTiffSeriesWithUI
@@ -20,7 +22,7 @@ public class OpenOneChannelTiffSeriesWithUI
                         "None",
                         ".*",
                         "",
-                        null,
+                        new ImageDataInfo(),   ///  ???
                         10  ,
                         true,
                         false);

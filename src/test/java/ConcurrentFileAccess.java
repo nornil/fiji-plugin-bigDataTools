@@ -1,4 +1,5 @@
 import de.embl.cba.bigDataTools.VirtualStackOfStacks.VirtualStackOfStacks;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
 import de.embl.cba.bigDataTools.utils.MonitorThreadPoolStatus;
 import de.embl.cba.bigDataTools.utils.Utils;
 import net.imglib2.FinalInterval;
@@ -18,7 +19,7 @@ public class ConcurrentFileAccess
         VirtualStackOfStacks vss = new VirtualStackOfStacks(
                 "/Users/tischer/Documents/tmp/stack",
                 channelFolders,
-                fileList, 1, 1, 500, 500, 1, 8, fileType, "");
+                fileList, 1, 1, 500, 500, 1, new ShearingSettings(), 8, fileType, "");
 
 
         byte[][][] dataCube = new byte[1][100][100];

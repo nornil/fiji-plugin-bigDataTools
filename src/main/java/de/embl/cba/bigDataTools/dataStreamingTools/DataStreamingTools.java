@@ -119,7 +119,8 @@ public class DataStreamingTools {
             boolean partialDataSet)
     {
 
-        if ( namingScheme.contains("<Z") )
+
+        if ( namingScheme.contains( "<Z" ) )
         {
             // TODO: change below logic somehow (maybe via GUI?)
             partialDataSet = true;
@@ -134,7 +135,7 @@ public class DataStreamingTools {
         }
         else
         {
-            imageDataInfo = new ImageDataInfo();
+
             imageDataInfo.h5DataSetName = h5DataSetName;
 
             if ( ! setAllInfosByParsingFilesAndFolders(
@@ -148,7 +149,6 @@ public class DataStreamingTools {
 
         }
 
-
         //
         // init the virtual stack
         //
@@ -161,6 +161,7 @@ public class DataStreamingTools {
                 imageDataInfo.nX,
                 imageDataInfo.nY,
                 imageDataInfo.nZ,
+                imageDataInfo.shearingSettings,
                 imageDataInfo.bitDepth,
                 imageDataInfo.fileType,
                 imageDataInfo.h5DataSetName);
@@ -1568,7 +1569,7 @@ public class DataStreamingTools {
                         "None",
                         ".*",
                         "ResolutionLevel 0/Data",
-                        imageDataInfo,
+                        new ImageDataInfo(),      ///   ???
                         nIOthreads,
                         true,
                         false);

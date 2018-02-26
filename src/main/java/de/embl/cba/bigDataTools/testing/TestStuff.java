@@ -1,6 +1,7 @@
 package de.embl.cba.bigDataTools.testing;
 
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingTools;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
 import de.embl.cba.bigDataTools.utils.ImageDataInfo;
 import ij.ImagePlus;
 

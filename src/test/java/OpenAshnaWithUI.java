@@ -1,5 +1,6 @@
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingTools;
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingToolsGUI;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
 import ij.IJ;
 
 public class OpenAshnaWithUI

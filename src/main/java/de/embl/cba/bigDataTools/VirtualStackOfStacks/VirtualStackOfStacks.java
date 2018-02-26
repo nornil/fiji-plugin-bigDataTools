@@ -35,6 +35,7 @@ package de.embl.cba.bigDataTools.VirtualStackOfStacks;
  */
 
 import de.embl.cba.bigDataTools.Region5D;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
 import de.embl.cba.bigDataTools.logging.IJLazySwingLogger;
 import de.embl.cba.bigDataTools.logging.Logger;
 import de.embl.cba.bigDataTools.utils.Utils;
@@ -68,6 +69,7 @@ import java.util.ArrayList;
 public class VirtualStackOfStacks extends VirtualStack {
     int nSlices;
     private int nX, nY, nZ, nC, nT;
+    ShearingSettings shearingSettings;
     int bitDepth = 0;
     FileInfoSer[][][] infos;  // channel, t, z
     String fileType = Utils.FileType.TIFF_STACKS.toString();
@@ -83,7 +85,17 @@ public class VirtualStackOfStacks extends VirtualStack {
     Logger logger = new IJLazySwingLogger();
 
     /** Creates a new, empty virtual stack of required size */
-    public VirtualStackOfStacks(String directory, String[] channelFolders, String[][][] fileList, int nC, int nT, int nX, int nY, int nZ, int bitDepth, String fileType, String h5DataSet) {
+    public VirtualStackOfStacks (
+            String directory,
+            String[] channelFolders,
+            String[][][] fileList,
+            int nC, int nT, int nX, int nY, int nZ,
+            ShearingSettings shearingSettings,
+            int bitDepth,
+            String fileType,
+            String h5DataSet )
+    {
+
         super();
 
         this.directory = directory;
@@ -92,6 +104,7 @@ public class VirtualStackOfStacks extends VirtualStack {
         this.nZ = nZ;
         this.nX = nX;
         this.nY = nY;
+        this.shearingSettings = shearingSettings;
         this.bitDepth = bitDepth;
         this.nSlices = nC*nT*nZ;
         this.fileType = fileType;
@@ -107,9 +120,11 @@ public class VirtualStackOfStacks extends VirtualStack {
     }
 
 
-    public VirtualStackOfStacks(String directory, FileInfoSer[][][] infos)
+    public VirtualStackOfStacks( String directory, FileInfoSer[][][] infos )
     {
         super();
+
+        this.shearingSettings = new ShearingSettings(); // TODO??
 
         this.infos = infos;
         this.directory = directory;
@@ -508,12 +523,12 @@ public class VirtualStackOfStacks extends VirtualStack {
     N is computed by IJ assuming the czt ordering, with
     n = ( channel + z*nC + t*nZ*nC ) + 1
     */
-    public ImageProcessor getProcessor(int n) {
+    public ImageProcessor getProcessor( int n ) {
         // recompute channel,z,t
         n -= 1;
         int c = (n % nC);
-        int z = ((n-c)%(nZ*nC))/nC;
-        int t = (n-c-z*nC)/(nZ*nC);
+        int z = ((n-c)%( nZ*nC ) ) / nC;
+        int t = (n-c-z * nC)/( nZ * nC);
 
         ImagePlus imp;
 
@@ -543,13 +558,21 @@ public class VirtualStackOfStacks extends VirtualStack {
         FileInfoSer fi = infos[ c ][ t ][ z ];
 
         Point3D po, ps;
-        po = new Point3D(0,0,z);
-        if(fi.isCropped) {
+
+        po = new Point3D( shearingSettings.shearingFactorX, shearingSettings.shearingFactorY, z );
+
+
+        if( fi.isCropped )
+        {
             // offset for cropping is added in  getDataCube
             ps = new Point3D(fi.pCropSize[0],fi.pCropSize[1],1);
-        } else {
+        }
+        else
+        {
             ps = new Point3D(fi.width,fi.height,1);
         }
+
+
 
         Region5D region5D = new Region5D();
         region5D.t = t;
@@ -558,7 +581,7 @@ public class VirtualStackOfStacks extends VirtualStack {
         region5D.size = ps;
         region5D.subSampling = new Point3D(1, 1, 1);
         int[] intensityGate = new int[]{-1,-1};
-        imp = getDataCube(region5D, intensityGate, 1);
+        imp = getDataCube( region5D, intensityGate, 1 );
 
         return imp.getProcessor();
 
