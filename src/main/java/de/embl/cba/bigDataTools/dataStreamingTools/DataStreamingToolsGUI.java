@@ -50,11 +50,13 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
     JTextField tfGateMax = new JTextField("255",5);
 
     // obliqueTab
+    JCheckBox cbUseObliqueAngle = new JCheckBox("");
     JCheckBox cbViewLeft = new JCheckBox("");
     JCheckBox cbBackwardStackAcquisition = new JCheckBox("");
-    JTextField tfCameraPixelsize= new JTextField("6.5", 1);
+    JTextField tfCameraPixelsize= new JTextField("6.5", 2);
     JTextField tfMagnification = new JTextField("40",2);
-    JTextField tfStepsize = new JTextField("40",3);
+    JTextField tfStepsize = new JTextField("2",2);
+    JTextField tfobjectiveAngle = new JTextField("45",3);
 
 
     JComboBox filterPatternComboBox = new JComboBox(new String[] {
@@ -308,6 +310,11 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         mainPanels.get(k).setLayout(new BoxLayout(mainPanels.get(k), BoxLayout.PAGE_AXIS));
 
         panels.add(new JPanel());
+        panels.get(j).add(new JLabel("Use Oblique  ( false Default)"));
+        panels.get(j).add(cbUseObliqueAngle);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
         panels.get(j).add(new JLabel("Magnification =   (40x Default)"));
         panels.get(j).add(tfMagnification);
         mainPanels.get(k).add(panels.get(j++));
@@ -330,6 +337,11 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Stack stepsize (in mikrometers) "));
         panels.get(j).add(tfStepsize);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("tfobjectiveAngle (in degrees ) "));
+        panels.get(j).add(tfobjectiveAngle);
         mainPanels.get(k).add(panels.get(j++));
 
         jtp.add("Oblique", mainPanels.get(k++));
@@ -436,19 +448,23 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
         ShearingSettings shearingSettings = new ShearingSettings();
 
-        
+
         shearingSettings.magnification = new Double(tfMagnification.getText());
         shearingSettings.cameraPixelsize= new Double(tfCameraPixelsize.getText());
         shearingSettings.stepSize= new Double(tfStepsize.getText());
         shearingSettings.backwardStackAcquisition= new Boolean(cbBackwardStackAcquisition.getText());
         shearingSettings.viewLeft= new Boolean(cbViewLeft.getText());
-
+        shearingSettings.objectiveAngle= new Double(tfobjectiveAngle.getText());
+         double N=1;
         // get shearing factors from GUI
-
+        double diagdz = stepSize/float(N-1)/cameraPixelsize*magnification;
+        double dxy = cameraPixelsize/magnification
 
         // math   // e.g. calculation of new shearingfactors..
+        
 
         // shearingSettings.shearingFactorX=shearingSettings.getShearingfactorX()
+
         shearingSettings.shearingFactorX = 0.0;
         shearingSettings.shearingFactorY = 0.0 ;
 
