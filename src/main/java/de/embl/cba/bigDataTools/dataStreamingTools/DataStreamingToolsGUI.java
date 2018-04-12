@@ -22,6 +22,8 @@ import java.util.Scanner;
 
 import static java.awt.Desktop.getDesktop;
 import static java.awt.Desktop.isDesktopSupported;
+import static java.lang.Math.PI;
+import static java.lang.Math.sin;
 
 /**
  * Created by tischi on 11/04/17.
@@ -51,6 +53,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
     // obliqueTab
     JCheckBox cbUseObliqueAngle = new JCheckBox("");
+    JCheckBox cbUseYshear = new JCheckBox("");
     JCheckBox cbViewLeft = new JCheckBox("");
     JCheckBox cbBackwardStackAcquisition = new JCheckBox("");
     JTextField tfCameraPixelsize= new JTextField("6.5", 2);
@@ -110,6 +113,8 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
     final String REPORT_ISSUE = "Report an issue";
     JButton reportIssue =  new JButton(REPORT_ISSUE);
+
+
 
     Logger logger = new IJLazySwingLogger();
 
@@ -309,39 +314,53 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         mainPanels.add( new JPanel() );
         mainPanels.get(k).setLayout(new BoxLayout(mainPanels.get(k), BoxLayout.PAGE_AXIS));
 
+
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Use Oblique  ( false Default)"));
         panels.get(j).add(cbUseObliqueAngle);
+        cbUseObliqueAngle.addActionListener(this);
+        mainPanels.get(k).add(panels.get(j++));
+
+        panels.add(new JPanel());
+        panels.get(j).add(new JLabel("along Y shearing? ( false Default)"));
+        panels.get(j).add(cbUseYshear);
+        cbUseYshear.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Magnification =   (40x Default)"));
         panels.get(j).add(tfMagnification);
+        tfMagnification.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Pixelsize on Camera in mikrometer = (6.5 Default)"));
         panels.get(j).add(tfCameraPixelsize);
+        tfCameraPixelsize.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("View left? (Right default)"));
         panels.get(j).add(cbViewLeft);
+        cbViewLeft.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("BackwardStackAcquisition? (Forward default)"));
         panels.get(j).add(cbBackwardStackAcquisition);
+        cbBackwardStackAcquisition.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Stack stepsize (in mikrometers) "));
         panels.get(j).add(tfStepsize);
+        tfStepsize.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("tfobjectiveAngle (in degrees ) "));
         panels.get(j).add(tfobjectiveAngle);
+        tfobjectiveAngle.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
 
         jtp.add("Oblique", mainPanels.get(k++));
@@ -431,55 +450,86 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         return true;
     }
 
-    public void actionPerformed( ActionEvent e )
-    {
+    public void actionPerformed( ActionEvent e ) {
+
         int i = 0;
 
         //
         // Get values from GUI
         //
         final DataStreamingTools dataStreamingTools = new DataStreamingTools();
-        final String h5DataSet = (String)hdf5DataSetComboBox.getSelectedItem();
-        final int nIOthreads = new Integer( tfIOThreads.getText() );
-        final int rowsPerStrip = new Integer( tfRowsPerStrip.getText() );
+        final String h5DataSet = (String) hdf5DataSetComboBox.getSelectedItem();
+        final int nIOthreads = new Integer(tfIOThreads.getText());
+        final int rowsPerStrip = new Integer(tfRowsPerStrip.getText());
         final String filterPattern = (String) filterPatternComboBox.getSelectedItem();
         final String channelPattern = (String) namingSchemeComboBox.getSelectedItem();
 
 
         ShearingSettings shearingSettings = new ShearingSettings();
 
+// NN if this is the first event.
+       //shearingSettings.magnification etc
 
         shearingSettings.magnification = new Double(tfMagnification.getText());
-        shearingSettings.cameraPixelsize= new Double(tfCameraPixelsize.getText());
-        shearingSettings.stepSize= new Double(tfStepsize.getText());
-        shearingSettings.backwardStackAcquisition= new Boolean(cbBackwardStackAcquisition.getText());
-        shearingSettings.viewLeft= new Boolean(cbViewLeft.getText());
-        shearingSettings.objectiveAngle= new Double(tfobjectiveAngle.getText());
-         double N=1;
-        // get shearing factors from GUI
-        double diagdz = stepSize/float(N-1)/cameraPixelsize*magnification;
-        double dxy = cameraPixelsize/magnification
+        shearingSettings.cameraPixelsize = new Double(tfCameraPixelsize.getText());
+        shearingSettings.stepSize = new Double(tfStepsize.getText());
+        shearingSettings.backwardStackAcquisition = new Boolean(cbBackwardStackAcquisition.getText());
+        shearingSettings.viewLeft = new Boolean(cbViewLeft.getText());
+        shearingSettings.objectiveAngle = new Double(tfobjectiveAngle.getText());
+        shearingSettings.useYshear = new Boolean(cbViewLeft.getText());
+        // shearingSettings.useObliqueAngle=new Boolean(cbUseObliqueAngle.getText());
 
+
+        double N = 1;
+        // get shearing factors from GUI    OOBBSSS floatN !!
+        // double diagdz = shearingSettings.stepSize/float(N-1)/shearingSettings.cameraPixelsize*shearingSettings.magnification;
+        //double dxy = shearingSettings.cameraPixelsize/shearingSettings.magnification
+
+        // if (e.getActionCommand().equals(shearingSettings.useObliqueAngle) ) {
+
+        if (shearingSettings.useObliqueAngle) {    //true
+
+            if (shearingSettings.viewLeft) {
+                shearingSettings.stepSize = shearingSettings.stepSize * (-1.0);
+            }
+            if (shearingSettings.backwardStackAcquisition) {
+                shearingSettings.stepSize = shearingSettings.stepSize * (-1.0);
+            }
+                //
+            shearingSettings.shearingFactorX = (-1.0)*shearingSettings.stepSize * shearingSettings.magnification *(1.0/shearingSettings.cameraPixelsize)* sin(shearingSettings.objectiveAngle*PI/180.0);
+
+            shearingSettings.shearingFactorY = 0.0;
+
+            if (shearingSettings.useYshear) {
+                shearingSettings.shearingFactorY = shearingSettings.stepSize * shearingSettings.magnification * (1.0/shearingSettings.cameraPixelsize)* sin(shearingSettings.objectiveAngle*PI/180.0);
+                shearingSettings.shearingFactorX = 0.0;
+            }
+        }
+        //}//
+        else {
+            shearingSettings.shearingFactorX = 0.0;
+            shearingSettings.shearingFactorY = 0.0;
+        }
+
+        //  calc shape  total image based on  image file info
+        //
         // math   // e.g. calculation of new shearingfactors..
-        
+
 
         // shearingSettings.shearingFactorX=shearingSettings.getShearingfactorX()
 
-        shearingSettings.shearingFactorX = 0.0;
-        shearingSettings.shearingFactorY = 0.0 ;
 
 
-
-        if ( e.getActionCommand().equals( STREAMfromFolder ) ) {
+        if (e.getActionCommand().equals(STREAMfromFolder)) {
 
             // Open from folder
             final String directory = IJ.getDirectory("Select a Directory");
             if (directory == null)
                 return;
-            ImageDataInfo imageDataInfo =new ImageDataInfo();
-            imageDataInfo.shearingSettings=shearingSettings;
+            ImageDataInfo imageDataInfo = new ImageDataInfo();
+            imageDataInfo.shearingSettings = shearingSettings;
 
-
+//NN
             Thread t1 = new Thread(new Runnable() {
                 public void run() {
                     dataStreamingTools.openFromDirectory(
@@ -487,7 +537,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                             channelPattern,
                             filterPattern,
                             h5DataSet,
-                            imageDataInfo,      //NN
+                            imageDataInfo,
                             nIOthreads,
                             true,
                             false);
@@ -495,9 +545,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             });
             t1.start();
 
-        }
-        else if ( e.getActionCommand().equals(BDV) )
-        {
+        } else if (e.getActionCommand().equals(BDV)) {
 
             //
             // View current channel and time-point in BigDataViewer
@@ -515,9 +563,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                 */
             logger.error("Currently not implemented.");
 
-        }
-        else if (e.getActionCommand().equals(STREAMfromInfoFile))
-        {
+        } else if (e.getActionCommand().equals(STREAMfromInfoFile)) {
             // Open from file
             //
             String filePath = IJ.getFilePath("Select *.ser file");
@@ -526,23 +572,20 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             File file = new File(filePath);
             ImagePlus imp = dataStreamingTools.openFromInfoFile(file.getParent() + "/", file.getName());
             imp.show();
-            imp.setPosition(1, imp.getNSlices()/2, 1);
+            imp.setPosition(1, imp.getNSlices() / 2, 1);
             imp.updateAndDraw();
             imp.resetDisplayRange();
-        }
-        else if ( e.getActionCommand().equals( SAVE ) )
-        {
+        } else if (e.getActionCommand().equals(SAVE)) {
 
             ImagePlus imp = IJ.getImage();
-            if ( ! Utils.hasVirtualStackOfStacks(imp) ) return;
+            if (!Utils.hasVirtualStackOfStacks(imp)) return;
             VirtualStackOfStacks vss = (VirtualStackOfStacks) imp.getStack();
 
             //if ( ! checkImageProperties() ) return;
 
             // Check that all image files have been parsed
             //
-            if (vss.numberOfUnparsedFiles() > 0)
-            {
+            if (vss.numberOfUnparsedFiles() > 0) {
                 logger.error("There are still " + vss.numberOfUnparsedFiles() +
                         " files in the folder that have not been parsed yet.\n" +
                         "Please try again later (check ImageJ's status bar).");
@@ -552,50 +595,45 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             fc = new JFileChooser(vss.getDirectory());
             int returnVal = fc.showSaveDialog(DataStreamingToolsGUI.this);
 
-            if (returnVal == JFileChooser.APPROVE_OPTION)
-            {
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
                 final File file = fc.getSelectedFile();
 
                 Utils.FileType fileType = (Utils.FileType) comboFileTypeForSaving.getSelectedItem();
 
-                if ( fileType.equals( Utils.FileType.SERIALIZED_HEADERS ) )
-                {
+                if (fileType.equals(Utils.FileType.SERIALIZED_HEADERS)) {
 
                     // Save the info file
                     //
                     Thread t1 = new Thread(new Runnable() {
-                        public void run()
-                        {
+                        public void run() {
                             logger.info("Saving: " + file.getAbsolutePath());
                             dataStreamingTools.writeFileInfosSer(vss.getFileInfosSer(), file.getAbsolutePath());
                         }
-                    }); t1.start();
+                    });
+                    t1.start();
 
-                }
-                else if ( fileType.equals( Utils.FileType.TIFF )
-                        || fileType.equals( Utils.FileType.HDF5 )
-                        || fileType.equals( Utils.FileType.HDF5_IMARIS_BDV ) )
-                {
+                } else if (fileType.equals(Utils.FileType.TIFF)
+                        || fileType.equals(Utils.FileType.HDF5)
+                        || fileType.equals(Utils.FileType.HDF5_IMARIS_BDV)) {
 
                     final int ioThreads = new Integer(tfIOThreads.getText());
 
                     // Check that there is enough memory to hold the data in RAM while saving
                     //
                     int safetyMargin = 3;
-                    if( ! Utils.checkMemoryRequirements( imp, safetyMargin,
-                            Math.min(ioThreads, imp.getNFrames())) ) return;
+                    if (!Utils.checkMemoryRequirements(imp, safetyMargin,
+                            Math.min(ioThreads, imp.getNFrames()))) return;
 
                     String compression = "";
-                    if(cbLZW.isSelected())
-                        compression="LZW";
+                    if (cbLZW.isSelected())
+                        compression = "LZW";
 
                     SavingSettings savingSettings = getSavingSettings(rowsPerStrip, imp, file, fileType, ioThreads, compression);
 
                     new Thread(new Runnable() {
-                        public void run()
-                        {
+                        public void run() {
                             dataStreamingToolsSavingThreads = new DataStreamingTools();
-                            dataStreamingToolsSavingThreads.saveVSSAsStacks( savingSettings );
+                            dataStreamingToolsSavingThreads.saveVSSAsStacks(savingSettings);
                         }
                     }).start();
 
@@ -603,12 +641,10 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             }
 
-        }
-        else if ( e.getActionCommand().equals( SAVE_PLANES ) )
-        {
+        } else if (e.getActionCommand().equals(SAVE_PLANES)) {
 
             ImagePlus imp = IJ.getImage();
-            if ( ! Utils.hasVirtualStackOfStacks( imp ) ) return;
+            if (!Utils.hasVirtualStackOfStacks(imp)) return;
             VirtualStackOfStacks vss = (VirtualStackOfStacks) imp.getStack();
 
             Utils.FileType fileType = (Utils.FileType) comboFileTypeForSaving.getSelectedItem();
@@ -616,16 +652,14 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             // Check that all image files have been parsed
             //
-            if (vss.numberOfUnparsedFiles() > 0)
-            {
+            if (vss.numberOfUnparsedFiles() > 0) {
                 logger.error("There are still " + vss.numberOfUnparsedFiles() +
                         " files in the folder that have not been parsed yet.\n" +
                         "Please try again later (check ImageJ's status bar).");
                 return;
             }
 
-            if ( fileType.equals(Utils.FileType.SERIALIZED_HEADERS) ||  fileType.equals(Utils.FileType.HDF5) )
-            {
+            if (fileType.equals(Utils.FileType.SERIALIZED_HEADERS) || fileType.equals(Utils.FileType.HDF5)) {
 
                 logger.error("Only saving as Tiff files is supported for single planes; " +
                         "please change your file-type selection.");
@@ -634,8 +668,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             fc = new JFileChooser(vss.getDirectory());
             int returnVal = fc.showSaveDialog(DataStreamingToolsGUI.this);
-            if (returnVal == JFileChooser.APPROVE_OPTION)
-            {
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
                 final File file = fc.getSelectedFile();
 
                 final int ioThreads = new Integer(tfIOThreads.getText());
@@ -645,8 +678,8 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                 //if( ! Utils.checkMemoryRequirements(imp, Math.min(ioThreads, imp.getNFrames())) ) return;
 
                 String compression = "";
-                if(cbLZW.isSelected())
-                    compression="LZW";
+                if (cbLZW.isSelected())
+                    compression = "LZW";
 
                 SavingSettings savingSettings = new SavingSettings();
                 savingSettings.imp = imp;
@@ -675,41 +708,34 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             }
 
-        }
-        else if (e.getActionCommand().equals(STOP_SAVING))
-        {
-            if ( dataStreamingToolsSavingThreads != null )
-            {
+        } else if (e.getActionCommand().equals(STOP_SAVING)) {
+            if (dataStreamingToolsSavingThreads != null) {
                 dataStreamingToolsSavingThreads.cancelSaving();
             }
 
-        }
-        else if (e.getActionCommand().equals(LOAD_FULLY_INTO_RAM))
-        {
+        } else if (e.getActionCommand().equals(LOAD_FULLY_INTO_RAM)) {
 
-            if( ! Utils.checkMemoryRequirements(IJ.getImage()) ) return;
-            if( ! Utils.hasVirtualStackOfStacks(IJ.getImage())) return;
+            if (!Utils.checkMemoryRequirements(IJ.getImage())) return;
+            if (!Utils.hasVirtualStackOfStacks(IJ.getImage())) return;
 
             Thread t1 = new Thread(new Runnable() {
                 public void run() {
                     ImagePlus impRAM = dataStreamingTools.loadVSSFullyIntoRAM(IJ.getImage(), nIOthreads);
-                    if (impRAM != null)
-                    {
+                    if (impRAM != null) {
                         impRAM.show();
                     }
 
                 }
-            }); t1.start();
+            });
+            t1.start();
 
-        }
-        else if ( e.getActionCommand().equals( CROPasNewStream ) )
-        {
+        } else if (e.getActionCommand().equals(CROPasNewStream)) {
             //
             // Crop As New Stream
             //
 
             ImagePlus imp = IJ.getImage();
-            if ( !Utils.hasVirtualStackOfStacks(imp) ) return;
+            if (!Utils.hasVirtualStackOfStacks(imp)) return;
             VirtualStackOfStacks vss = (VirtualStackOfStacks) imp.getStack();
 
             //settings.folderElastix + "bin/elastix",
@@ -717,7 +743,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             //
 
             int numberOfUnparsedFiles = vss.numberOfUnparsedFiles();
-            if(numberOfUnparsedFiles > 0) {
+            if (numberOfUnparsedFiles > 0) {
                 logger.error("There are still " + numberOfUnparsedFiles +
                         " files in the folder that have not been parsed yet.\n" +
                         "Please try again later (check ImageJ's status bar).");
@@ -731,25 +757,25 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             // check
             //
-            if ( ! Utils.checkRange(imp, zMinMax[0], zMinMax[1], "z") ) return;
-            if ( ! Utils.checkRange(imp, tMinMax[0], tMinMax[1], "t") ) return;
+            if (!Utils.checkRange(imp, zMinMax[0], zMinMax[1], "z")) return;
+            if (!Utils.checkRange(imp, tMinMax[0], tMinMax[1], "t")) return;
 
             // compute
             //
             ImagePlus imp2 = dataStreamingTools.getCroppedVSS(
                     imp, imp.getRoi(),
                     zMinMax[0] - 1, zMinMax[1] - 1,
-                    tMinMax[0] - 1, tMinMax[1] - 1);
+                    tMinMax[0] - 1, tMinMax[1] - 1,shearingSettings); //NN ! ,imagedatainfo.shearingSettings
+
 
             // publish
             //
-            if (imp2 != null)
-            {
+            if (imp2 != null) {
                 Utils.show(imp2);
             }
 
 
-        }  else if (e.getActionCommand().equals(REPORT_ISSUE)) {
+        } else if (e.getActionCommand().equals(REPORT_ISSUE)) {
 
             //
             // Report issue
@@ -771,6 +797,44 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
             }
 
+        } else if (e.getActionCommand().equals(cbUseObliqueAngle)) {
+            logger.info("YOU MADE IT! cbUseObliqueAngle");
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
+        }
+        else if (e.getActionCommand().equals(cbBackwardStackAcquisition)) {
+            logger.info("YOU MADE IT! 2 ");
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
+        }
+        else if (e.getActionCommand().equals(cbViewLeft)) {
+            logger.info("YOU MADE IT! 3");
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
+        }
+        else if (e.getActionCommand().equals(tfCameraPixelsize)) {
+            logger.info("YOU MADE IT! 4 ");
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
+        }
+        else if (e.getActionCommand().equals(tfMagnification)) {
+            logger.info("YOU MADE IT! 5 ");
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
+        }
+        else if (e.getActionCommand().equals(tfobjectiveAngle)) {
+            logger.info("YOU MADE IT! 6 ");
+
+          //  imageDataInfo   how do I access.
+
+            // check that stream exists!
+            // Recalculate shearingSettings.shearingFactor X and Y
+            //
         }
     }
 

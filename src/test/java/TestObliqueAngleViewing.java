@@ -25,15 +25,15 @@ public class TestObliqueAngleViewing {
                 imageDataInfo.shearingSettings= new ShearingSettings();
 
                 final String directory ="/Users/norlin/forskning/Programmering/Java/fiji-plugin-bigDataTools/src/test/resources";
-                dataStreamingTools.openFromDirectory(
-                        directory,
-                        "None",
-                        ".*",
-                        "Data",
-                         imageDataInfo, // imageDataInfo
-                        10,
-                        true,
-                        false);
+              //  dataStreamingTools.openFromDirectory(
+              //          directory,
+              //          "None",
+              //          ".*",
+              //          "Data",
+              //           imageDataInfo, // imageDataInfo
+              //          10,
+              //          true,
+              //          false);
             }
         }); t1.start();
 

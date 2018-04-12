@@ -559,17 +559,25 @@ public class VirtualStackOfStacks extends VirtualStack {
 
         Point3D po, ps;
 
-        po = new Point3D( shearingSettings.shearingFactorX, shearingSettings.shearingFactorY, z );
+// write z plane info into shearingSettings??
+// shearing
+        //
+         po = new Point3D( -shearingSettings.shearingFactorX*z+shearingSettings.shearingFactorX*(nZ-1), -shearingSettings.shearingFactorY*z+shearingSettings.shearingFactorY*(nZ-1), z );
 
+         shearingSettings.offset=po;
+         // po = new Point3D( shearingSettings.shearingFactorX, shearingSettings.shearingFactorY, z );
+        //   nZ-1  due to that
 
         if( fi.isCropped )
         {
             // offset for cropping is added in  getDataCube
-            ps = new Point3D(fi.pCropSize[0],fi.pCropSize[1],1);
+          //  ps = new Point3D(fi.pCropSize[0],fi.pCropSize[1],1);   NN
+            ps = new Point3D(fi.pCropSize[0]+java.lang.Math.abs((int) shearingSettings.shearingFactorX*nZ),fi.pCropSize[1]+java.lang.Math.abs((int) shearingSettings.shearingFactorY*nZ),1);
         }
         else
         {
-            ps = new Point3D(fi.width,fi.height,1);
+            //  ps = new Point3D(fi.width,fi.height,1);
+            ps = new Point3D(fi.width+java.lang.Math.abs((int) shearingSettings.shearingFactorX*nZ),fi.height+java.lang.Math.abs((int) shearingSettings.shearingFactorY*nZ),1);
         }
 
 
@@ -578,7 +586,7 @@ public class VirtualStackOfStacks extends VirtualStack {
         region5D.t = t;
         region5D.c = c;
         region5D.offset = po;
-        region5D.size = ps;
+        region5D.size = ps;      //NN  ?   see above changed ps.
         region5D.subSampling = new Point3D(1, 1, 1);
         int[] intensityGate = new int[]{-1,-1};
         imp = getDataCube( region5D, intensityGate, 1 );
@@ -612,7 +620,7 @@ public class VirtualStackOfStacks extends VirtualStack {
             // offset is added by getDataCube
             ps = infos[0][0][0].getCropSize();
         } else {
-            ps = new Point3D(nX, nY, nZ);
+            ps = new Point3D(nX, nY, nZ);   // NN ?
         }
 
         Region5D region5D = new Region5D();

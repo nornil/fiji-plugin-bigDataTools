@@ -34,8 +34,10 @@ package de.embl.cba.bigDataTools.bigDataTracker;
 import de.embl.cba.bigDataTools.Region5D;
 import de.embl.cba.bigDataTools.VirtualStackOfStacks.VirtualStackOfStacks;
 import de.embl.cba.bigDataTools.dataStreamingTools.DataStreamingTools;
+import de.embl.cba.bigDataTools.dataStreamingTools.ShearingSettings;
 import de.embl.cba.bigDataTools.logging.IJLazySwingLogger;
 import de.embl.cba.bigDataTools.logging.Logger;
+import de.embl.cba.bigDataTools.utils.ImageDataInfo;
 import de.embl.cba.bigDataTools.utils.Utils;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -173,7 +175,7 @@ public class BigDataTracker {
                         trackOffsets.toArray(new Point3D[trackOffsets.size()]),
                         pCropSize,
                         track.getTmin(),
-                        track.getTmax());
+                        track.getTmax());                                               // NN ! wrong!!
             }
             else
             {

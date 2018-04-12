@@ -77,6 +77,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Math.abs;
 
 
 //import net.imagej.ImageJ;
@@ -149,6 +150,26 @@ public class DataStreamingTools {
 
         }
 
+
+        //NN
+       // imageDataInfo.nZ  into shearingsetting
+        if ( abs(imageDataInfo.shearingSettings.shearingFactorX)> 0.0 ) {
+            imageDataInfo.nX = imageDataInfo.nX +(int) abs(Math.ceil((imageDataInfo.nZ - 1) * imageDataInfo.shearingSettings.shearingFactorX));
+        }
+        System.out.printf(" nX is %d\n" ,imageDataInfo.nX );
+        int ite= abs( (int) (Math.ceil((imageDataInfo.nZ - 1) * imageDataInfo.shearingSettings.shearingFactorX) ) );
+        logger.info(" Mathceils: " + ite );
+        logger.info(" Xsize image: " + imageDataInfo.nX );
+        logger.info(" Mathceil: " + ((imageDataInfo.nZ - 1) * imageDataInfo.shearingSettings.shearingFactorX));
+
+        if ( abs(imageDataInfo.shearingSettings.shearingFactorY) > 0.0 ) {
+            imageDataInfo.nY = imageDataInfo.nY +(int) Math.ceil((imageDataInfo.nZ - 1) * imageDataInfo.shearingSettings.shearingFactorY);
+        }
+
+
+         //   nX=
+         //   nY= size of image...
+
         //
         // init the virtual stack
         //
@@ -171,7 +192,7 @@ public class DataStreamingTools {
         stack.setH5DataSet( h5DataSetName );
         stack.setDirectory( directory );
         stack.setNamingScheme( namingScheme );
-
+//NN here it is loosing correct size..
         ImagePlus imp = createImagePlusFromVSS( stack );
 
         // obtain file header informations for all c, t, z
@@ -1095,7 +1116,7 @@ public class DataStreamingTools {
 
     }
 
-    public static ImagePlus getCroppedVSS(ImagePlus imp, Roi roi, int zMin, int zMax, int tMin, int tMax)
+    public static ImagePlus getCroppedVSS(ImagePlus imp, Roi roi, int zMin, int zMax, int tMin, int tMax, ShearingSettings shearingSettings)   //NN !
     {
 
         int nt = tMax - tMin + 1;
@@ -1107,9 +1128,13 @@ public class DataStreamingTools {
         {
             for ( int t = 0; t < nt; t++ )
             {
-                po[t] = new Point3D(roi.getBounds().getX(), roi.getBounds().getY(), zMin);
+              //  po[t] = new Point3D(roi.getBounds().getX(), roi.getBounds().getY(), zMin); // original
+                po[t] = new Point3D(roi.getBounds().getX() + shearingSettings.offset.getX() , roi.getBounds().getY() + shearingSettings.offset.getY(), zMin); // NN !
+
             }
-            ps = new Point3D(roi.getBounds().getWidth(), roi.getBounds().getHeight(), zMax - zMin + 1);
+            ps = new Point3D(roi.getBounds().getWidth(), roi.getBounds().getHeight(), zMax - zMin + 1);   //original
+         //   ps = new Point3D(roi.getBounds().getWidth()+shearingSettings.offset.getX(), roi.getBounds().getHeight()+shearingSettings.offset.getY(), zMax - zMin + 1);  //NN !
+
         }
         else
         {
@@ -1117,7 +1142,9 @@ public class DataStreamingTools {
 
             for ( int t = 0; t < nt; t++ )
             {
-                po[t] = new Point3D(0, 0, zMin - 1);
+              //  po[t] = new Point3D(0, 0, zMin - 1); // Original
+                po[t] = new Point3D(0+shearingSettings.offset.getX(), 0+shearingSettings.offset.getY(), zMin - 1); //  NN !
+
             }
             ps = new Point3D(imp.getWidth(), imp.getHeight(), zMax - zMin + 1);
 
@@ -1125,13 +1152,17 @@ public class DataStreamingTools {
 
         // Crop
         //
-        ImagePlus impCropped = getCroppedVSS(imp, po, ps, tMin, tMax);
+        ImagePlus impCropped = getCroppedVSS(imp, po, ps, tMin, tMax);   //NN !
+     //   ImagePlus impCropped = getCroppedVSS(imp, po, ps, tMin, tMax,shearingSettings);   //NN !
+
         impCropped.setTitle(imp.getTitle() + "-crop");
         return impCropped;
 
     }
 
-    public static ImagePlus getCroppedVSS(ImagePlus imp, Point3D[] po, Point3D ps, int tMin, int tMax)
+  //  public static ImagePlus getCroppedVSS(ImagePlus imp, Point3D[] po, Point3D ps, int tMin, int tMax,ShearingSettings shearingSettings)    //NN !
+    public static ImagePlus getCroppedVSS(ImagePlus imp, Point3D[] po, Point3D ps, int tMin, int tMax)   //NN !
+
     {
 
         VirtualStackOfStacks vss = (VirtualStackOfStacks) imp.getStack();
