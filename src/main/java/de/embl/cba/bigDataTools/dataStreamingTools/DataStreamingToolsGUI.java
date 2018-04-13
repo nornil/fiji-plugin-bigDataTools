@@ -499,7 +499,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
            System.out.printf(" nX is !!!!! oblique\n");
 
-
+       }
         //if (shearingSettings.useObliqueAngle) {    //true
 
             if (shearingSettings.viewLeft) {
@@ -517,14 +517,14 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                 shearingSettings.shearingFactorY = shearingSettings.stepSize * shearingSettings.magnification * (1.0/shearingSettings.cameraPixelsize)* sin(shearingSettings.objectiveAngle*PI/180.0);
                 shearingSettings.shearingFactorX = 0.0;
             }
-        }
+
         //}//
         else {
             shearingSettings.shearingFactorX = 0.0;
             shearingSettings.shearingFactorY = 0.0;
         }
 
-       }
+
         //  calc shape  total image based on  image file info
         //
         // math   // e.g. calculation of new shearingfactors..
@@ -642,6 +642,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                     if (cbLZW.isSelected())
                         compression = "LZW";
 
+
                     SavingSettings savingSettings = getSavingSettings(rowsPerStrip, imp, file, fileType, ioThreads, compression);
 
                     new Thread(new Runnable() {
@@ -691,7 +692,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                 //
                 //if( ! Utils.checkMemoryRequirements(imp, Math.min(ioThreads, imp.getNFrames())) ) return;
 
-                String compression = "";
+               String compression = "";
                 if (cbLZW.isSelected())
                     compression = "LZW";
 
@@ -716,6 +717,18 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
                 savingSettings.compression = compression;
                 savingSettings.rowsPerStrip = rowsPerStrip;
                 savingSettings.nThreads = ioThreads;
+                //NN !
+                //Oblique
+                //
+                savingSettings.useoblique= useObliqueButton.isSelected();   //NN cbUseObliqueAngle.isSelected();
+                savingSettings.yShear=cbUseYshear.isSelected();
+                savingSettings.magnification=Double.parseDouble(tfMagnification.getText()); //NN not needed but for consistency
+                savingSettings.leftView=cbViewLeft.isSelected();
+                savingSettings.backwardStack=cbBackwardStackAcquisition.isSelected();
+                savingSettings.stepSize=Double.parseDouble(tfStepsize.getText()); //NN not needed but for consistency
+                savingSettings.objectiveAngle=Double.parseDouble(tfobjectiveAngle.getText()); //NN not needed but for consistency
+                savingSettings.pixelSize=Double.parseDouble(tfCameraPixelsize.getText()); //NN not needed but for consistency
+
 
                 dataStreamingToolsSavingThreads = new DataStreamingTools();
                 dataStreamingToolsSavingThreads.saveVSSAsPlanes(savingSettings);
@@ -876,6 +889,18 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         savingSettings.compression = compression;
         savingSettings.rowsPerStrip = rowsPerStrip;
         savingSettings.nThreads = ioThreads;
+
+        //NN !
+        savingSettings.useoblique= useObliqueButton.isSelected();   //NN cbUseObliqueAngle.isSelected();
+        savingSettings.yShear=cbUseYshear.isSelected();
+        savingSettings.magnification=Double.parseDouble(tfMagnification.getText()); //NN not needed but for consistency
+        savingSettings.leftView=cbViewLeft.isSelected();
+        savingSettings.backwardStack=cbBackwardStackAcquisition.isSelected();
+        savingSettings.stepSize=Double.parseDouble(tfStepsize.getText()); //NN not needed but for consistency
+        savingSettings.objectiveAngle=Double.parseDouble(tfobjectiveAngle.getText()); //NN not needed but for consistency
+
+
+
         return savingSettings;
     }
 

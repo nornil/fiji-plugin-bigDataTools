@@ -24,5 +24,16 @@ public class SavingSettings {
     public String compression;
     public int rowsPerStrip;
     public int nThreads;
+    public boolean useoblique;
+
+    //NN !
+    public boolean yShear;
+    public boolean leftView;
+    public boolean backwardStack;
+    public double pixelSize;
+    public double stepSize;
+    public double magnification;
+    public double objectiveAngle;
+
 
 }
