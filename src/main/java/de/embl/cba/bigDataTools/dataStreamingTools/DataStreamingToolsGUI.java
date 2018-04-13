@@ -105,6 +105,9 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
     final String STREAMfromInfoFile = "Stream from info file";
     JButton streamFromInfoFile =  new JButton(STREAMfromInfoFile);
 
+    final String USEObliqueButton = "Use Oblique";
+    JButton useObliqueButton =  new JButton(USEObliqueButton);
+
     final String LOAD_FULLY_INTO_RAM = "Load into RAM";
     JButton duplicateToRAM =  new JButton(LOAD_FULLY_INTO_RAM);
 
@@ -314,6 +317,11 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         mainPanels.add( new JPanel() );
         mainPanels.get(k).setLayout(new BoxLayout(mainPanels.get(k), BoxLayout.PAGE_AXIS));
 
+        panels.add(new JPanel());
+        useObliqueButton.setActionCommand(USEObliqueButton);
+        useObliqueButton.addActionListener(this);
+        panels.get(j).add(useObliqueButton);
+        mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
         panels.get(j).add(new JLabel("Use Oblique  ( false Default)"));
@@ -334,7 +342,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
         mainPanels.get(k).add(panels.get(j++));
 
         panels.add(new JPanel());
-        panels.get(j).add(new JLabel("Pixelsize on Camera in mikrometer = (6.5 Default)"));
+        panels.get(j).add(new JLabel("Pixelsize on Camera in micrometer = (6.5 Default)"));
         panels.get(j).add(tfCameraPixelsize);
         tfCameraPixelsize.addActionListener(this);
         mainPanels.get(k).add(panels.get(j++));
@@ -487,7 +495,12 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
 
         // if (e.getActionCommand().equals(shearingSettings.useObliqueAngle) ) {
 
-        if (shearingSettings.useObliqueAngle) {    //true
+       if (e.getActionCommand().equals(USEObliqueButton)) {
+
+           System.out.printf(" nX is !!!!! oblique\n");
+
+
+        //if (shearingSettings.useObliqueAngle) {    //true
 
             if (shearingSettings.viewLeft) {
                 shearingSettings.stepSize = shearingSettings.stepSize * (-1.0);
@@ -511,6 +524,7 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             shearingSettings.shearingFactorY = 0.0;
         }
 
+       }
         //  calc shape  total image based on  image file info
         //
         // math   // e.g. calculation of new shearingfactors..
@@ -735,6 +749,10 @@ public class DataStreamingToolsGUI extends JFrame implements ActionListener, Foc
             //
 
             ImagePlus imp = IJ.getImage();
+
+
+            // NN !  getprocessor call here. to write po into offset. and have it accessible.
+
             if (!Utils.hasVirtualStackOfStacks(imp)) return;
             VirtualStackOfStacks vss = (VirtualStackOfStacks) imp.getStack();
 
